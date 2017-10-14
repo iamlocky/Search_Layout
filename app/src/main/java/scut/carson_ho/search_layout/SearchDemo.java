@@ -2,10 +2,11 @@ package scut.carson_ho.search_layout;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
-import scut.carson_ho.searchview.ICallBack;
+import scut.carson_ho.searchview.SearchCallBack;
 import scut.carson_ho.searchview.SearchView;
-import scut.carson_ho.searchview.bCallBack;
+import scut.carson_ho.searchview.BackCallBack;
 
 /**
  * Created by Carson_Ho on 17/8/11.
@@ -27,15 +28,15 @@ public class SearchDemo extends AppCompatActivity {
 
         // 4. 设置点击搜索按键后的操作（通过回调接口）
         // 参数 = 搜索框输入的内容
-        searchView.setOnClickSearch(new ICallBack() {
+        searchView.setOnSearchClick(new SearchCallBack() {
             @Override
             public void SearchAciton(String string) {
-                System.out.println("我收到了" + string);
+                Toast.makeText(SearchDemo.this,string, Toast.LENGTH_SHORT).show();
             }
         });
 
         // 5. 设置点击返回按键后的操作（通过回调接口）
-        searchView.setOnClickBack(new bCallBack() {
+        searchView.setOnBackClick(new BackCallBack() {
             @Override
             public void BackAciton() {
                 finish();

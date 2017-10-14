@@ -5,11 +5,13 @@ import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
@@ -32,11 +34,11 @@ public class SearchView extends LinearLayout {
     private Context context;
 
     // 搜索框组件
-    private EditText et_search; // 搜索按键
+    public EditText et_search; // 搜索按键
     private TextView tv_clear;  // 删除搜索记录按键
     private LinearLayout search_block; // 搜索框布局
     private ImageView searchBack; // 返回按键
-
+    private ImageView iv_search; // 返回按键
 
     // ListView列表 & 适配器
     private SearchListView listView;
@@ -44,12 +46,12 @@ public class SearchView extends LinearLayout {
 
     // 数据库变量
     // 用于存放历史搜索记录
-    private RecordSQLiteOpenHelper helper ;
+    private RecordSQLiteOpenHelper helper;
     private SQLiteDatabase db;
 
     // 回调接口
-    private  ICallBack mCallBack;// 搜索按键回调接口
-    private  bCallBack bCallBack; // 返回按键回调接口
+    private SearchCallBack searchCallBack;// 搜索按键回调接口
+    private BackCallBack backCallBack; // 返回按键回调接口
 
     // 自定义属性设置
     // 1. 搜索字体属性设置：大小、颜色 & 默认提示
@@ -115,12 +117,48 @@ public class SearchView extends LinearLayout {
         typedArray.recycle();
     }
 
+    /**
+     * 点击键盘中搜索键后的操作，用于接口回调
+     */
+    public void setOnSearchClick(SearchCallBack searchCallBack) {
+        this.searchCallBack = searchCallBack;
+    }
+
+    /**
+     * 点击返回后的操作，用于接口回调
+     */
+    public void setOnBackClick(BackCallBack backCallBack) {
+        this.backCallBack = backCallBack;
+    }
+
+    public void doSearch(){
+        String s=et_search.getText().toString().trim();
+        if (TextUtils.isEmpty(s))
+        {
+            return;
+        }
+        // 1. 点击搜索按键后，根据输入的搜索字段进行查询
+        // 注：由于此处需求会根据自身情况不同而不同，所以具体逻辑由开发者自己实现，此处仅留出接口
+        if (searchCallBack != null) {
+            searchCallBack.SearchAciton(s);
+        }
+
+
+        // 2. 点击搜索键后，对该搜索字段在数据库是否存在进行检查（查询）->> 关注1
+        boolean hasData = hasData(s);
+        // 3. 若存在，则不保存；若不存在，则将该搜索字段保存（插入）到数据库，并作为历史搜索记录
+        if (!hasData) {
+            insertData(s);
+            queryData("");
+        }
+    }
+
 
     /**
      * 关注b
      * 作用：初始化搜索框
      */
-    private void init(){
+    private void init() {
 
         // 1. 初始化UI组件->>关注c
         initView();
@@ -145,6 +183,12 @@ public class SearchView extends LinearLayout {
             }
         });
 
+        iv_search.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doSearch();
+            }
+        });
         /**
          * 监听输入键盘更换后的搜索按键
          * 调用时刻：点击键盘上的搜索键时
@@ -152,21 +196,7 @@ public class SearchView extends LinearLayout {
         et_search.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
-
-                    // 1. 点击搜索按键后，根据输入的搜索字段进行查询
-                    // 注：由于此处需求会根据自身情况不同而不同，所以具体逻辑由开发者自己实现，此处仅留出接口
-                    if (!(mCallBack == null)){
-                        mCallBack.SearchAciton(et_search.getText().toString());
-                    }
-                    Toast.makeText(context, "需要搜索的是" + et_search.getText(), Toast.LENGTH_SHORT).show();
-
-                    // 2. 点击搜索键后，对该搜索字段在数据库是否存在进行检查（查询）->> 关注1
-                    boolean hasData = hasData(et_search.getText().toString().trim());
-                    // 3. 若存在，则不保存；若不存在，则将该搜索字段保存（插入）到数据库，并作为历史搜索记录
-                    if (!hasData) {
-                        insertData(et_search.getText().toString().trim());
-                        queryData("");
-                    }
+                    doSearch();
                 }
                 return false;
             }
@@ -222,25 +252,20 @@ public class SearchView extends LinearLayout {
             @Override
             public void onClick(View v) {
                 // 注：由于返回需求会根据自身情况不同而不同，所以具体逻辑由开发者自己实现，此处仅留出接口
-                if (!(bCallBack == null)){
-                    bCallBack.BackAciton();
+                if (backCallBack != null) {
+                    backCallBack.BackAciton();
                 }
-
-                //根据输入的内容模糊查询商品，并跳转到另一个界面，这个根据需求实现
-                Toast.makeText(context, "返回到上一页", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
-
 
     /**
      * 关注c：绑定搜索框xml视图
      */
-    private void initView(){
+    private void initView() {
 
         // 1. 绑定R.layout.search_layout作为搜索框的xml文件
-        LayoutInflater.from(context).inflate(R.layout.search_layout,this);
+        LayoutInflater.from(context).inflate(R.layout.search_layout, this);
 
         // 2. 绑定搜索框EditText
         et_search = (EditText) findViewById(R.id.et_search);
@@ -249,7 +274,7 @@ public class SearchView extends LinearLayout {
         et_search.setHint(textHintSearch);
 
         // 3. 搜索框背景颜色
-        search_block = (LinearLayout)findViewById(R.id.search_block);
+        search_block = (LinearLayout) findViewById(R.id.search_block);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) search_block.getLayoutParams();
         params.height = searchBlockHeight;
         search_block.setBackgroundColor(searchBlockColor);
@@ -260,11 +285,11 @@ public class SearchView extends LinearLayout {
 
         // 5. 删除历史搜索记录 按钮
         tv_clear = (TextView) findViewById(R.id.tv_clear);
-        tv_clear.setVisibility(INVISIBLE);
+        tv_clear.setVisibility(GONE);
 
         // 6. 返回按键
         searchBack = (ImageView) findViewById(R.id.search_back);
-
+        iv_search = (ImageView) findViewById(R.id.iv_serach);
     }
 
     /**
@@ -277,20 +302,20 @@ public class SearchView extends LinearLayout {
         Cursor cursor = helper.getReadableDatabase().rawQuery(
                 "select id as _id,name from records where name like '%" + tempName + "%' order by id desc ", null);
         // 2. 创建adapter适配器对象 & 装入模糊搜索的结果
-        adapter = new SimpleCursorAdapter(context, android.R.layout.simple_list_item_1, cursor, new String[] { "name" },
-                new int[] { android.R.id.text1 }, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+        adapter = new SimpleCursorAdapter(context, android.R.layout.simple_list_item_1, cursor, new String[]{"name"},
+                new int[]{android.R.id.text1}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
         // 3. 设置适配器
         listView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
 
         System.out.println(cursor.getCount());
         // 当输入框为空 & 数据库中有搜索记录时，显示 "删除搜索记录"按钮
-        if (tempName.equals("") && cursor.getCount() != 0){
+        if (tempName.equals("") && cursor.getCount() != 0) {
             tv_clear.setVisibility(VISIBLE);
+        } else {
+            tv_clear.setVisibility(GONE);
         }
-        else {
-            tv_clear.setVisibility(INVISIBLE);
-        };
+        ;
 
     }
 
@@ -302,7 +327,7 @@ public class SearchView extends LinearLayout {
         db = helper.getWritableDatabase();
         db.execSQL("delete from records");
         db.close();
-        tv_clear.setVisibility(INVISIBLE);
+        tv_clear.setVisibility(GONE);
     }
 
     /**
@@ -327,19 +352,5 @@ public class SearchView extends LinearLayout {
         db.close();
     }
 
-    /**
-     * 点击键盘中搜索键后的操作，用于接口回调
-     */
-    public void setOnClickSearch(ICallBack mCallBack){
-        this.mCallBack = mCallBack;
 
-    }
-
-    /**
-     * 点击返回后的操作，用于接口回调
-     */
-    public void setOnClickBack(bCallBack bCallBack){
-        this.bCallBack = bCallBack;
-
-    }
 }

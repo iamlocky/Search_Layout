@@ -16,7 +16,7 @@ public class EditText_Clear extends android.support.v7.widget.AppCompatEditText 
     /**
      * 步骤1：定义左侧搜索图标 & 一键删除图标
      */
-    private Drawable clearDrawable,searchDrawable;
+    private Drawable clearDrawable;
 
     public EditText_Clear(Context context) {
         super(context);
@@ -39,10 +39,9 @@ public class EditText_Clear extends android.support.v7.widget.AppCompatEditText 
      */
     private void init() {
         clearDrawable = getResources().getDrawable(R.drawable.clear);
-        searchDrawable = getResources().getDrawable(R.drawable.search);
 
-        setCompoundDrawablesWithIntrinsicBounds(searchDrawable, null,
-                null, null);
+//        setCompoundDrawablesWithIntrinsicBounds(searchDrawable, null,
+//                null, null);
         // setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top, Drawable right, Drawable bottom)介绍
         // 作用：在EditText上、下、左、右设置图标（相当于android:drawableLeft=""  android:drawableRight=""）
         // 注1：setCompoundDrawablesWithIntrinsicBounds（）传入的Drawable的宽高=固有宽高（自动通过getIntrinsicWidth（）& getIntrinsicHeight（）获取）
@@ -83,7 +82,7 @@ public class EditText_Clear extends android.support.v7.widget.AppCompatEditText 
      * 作用：判断是否显示删除图标
      */
     private void setClearIconVisible(boolean visible) {
-        setCompoundDrawablesWithIntrinsicBounds(searchDrawable, null,
+        setCompoundDrawablesWithIntrinsicBounds(null, null,
                 visible ? clearDrawable : null, null);
     }
 
