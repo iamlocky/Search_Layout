@@ -29,27 +29,16 @@ Searching  & High Diy style
 ## 4. Usage
 
 ##### Step 1：Import Library
-There are two ways to  import Library：
 
 - 1. For Gradle
 *build.Gradle*
 
 ```
 dependencies {
-    compile 'com.carson_ho:SearchLayout:1.0.1'
+     compile 'com.github.iamlocky:Search_Layout:1.0.3'
 }
 ```
 
-- 2. For Maven
-*pom.xml*
-```
-<dependency>
-  <groupId>com.carson_ho</groupId>
-  <artifactId>SearchLayout</artifactId>
-  <version>1.0.1</version>
-  <type>pom</type>
-</dependency>
-```
 
 
 ##### Step 2：Set Animation Attributes

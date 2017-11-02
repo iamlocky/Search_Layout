@@ -58,27 +58,18 @@
 该款[SearchLayout](https://github.com/Carson-Ho/Search_Layout)使用非常简单，仅需2步：
 
 ### 步骤1：导入控件库
-主要有 `Gradle` & `Maven` 2种方式：
+
 
 - 方式1：`Gradle`引入依赖
 *build.Gradle*
 
 ```
 dependencies {
-    compile 'com.carson_ho:SearchLayout:1.0.1'
+     compile 'com.github.iamlocky:Search_Layout:1.0.3'
 }
 ```
 
-- 方式2：`Maven`引入依赖
-*pom.xml*
-```
-<dependency>
-  <groupId>com.carson_ho</groupId>
-  <artifactId>SearchLayout</artifactId>
-  <version>1.0.1</version>
-  <type>pom</type>
-</dependency>
-```
+
 
 
 ### 步骤2：设置搜索框样式
